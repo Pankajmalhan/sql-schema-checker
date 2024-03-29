@@ -8,37 +8,39 @@ from langchain.cache import InMemoryCache,SQLiteCache
 
 set_llm_cache(SQLiteCache(database_path=".langchain.db"))
 
+SCHEMA_ANALYZER_PROMPT = SCHEMA_ANALYZER_PROMPT = """
+You are a {dialect} expert tasked with analyzing a table schema.
+Based on the provided SQL dialect and the current table schema, your objective is to verify the schema's 
+correctness and suggest improvements if necessary.
+Begin by thoroughly examining the entire schema, focusing on data types, constraints 
+(especially those found at the end of the schema), primary keys, foreign keys, and other relevant elements.
+After verifying the schema, provide clear and actionable suggestions to optimize the structure and performance
+of the table. Ensure your suggestions adhere to best practices and meet the requirements of the specified SQL dialect.
+Please provide your suggestions as a bullet list below.
 
-SCHEMA_ANALYZER_PROMPT ="""You are a {dialect} expert. 
-Based on the SQL dialect provided and the provided table schema, your task is to verify the schema
-for correctness and suggest improvements if necessary. Begin by thoroughly examining the entire schema,
-paying particular attention to data types, constraints (especially those found at the end of the schema),
-primary keys, foreign keys, and other relevant elements.
-After verifying the schema, provide suggestions for any necessary corrections or enhancements.
-Ensure your suggestions are clear and actionable, aiming to optimize the structure and performance
-of the table based on best practices and the requirements of the SQL dialect specified.
-
-### Table schema
+### Table Schema:
 {schema}
-### Table schema
+### Table Schema:
 
-SCHEMA_ANALYZER_RESULT = 
-
+Suggestions:
 """
+
 GENERATE_UPDATED_SCHEMA_TABLE = """
-You are a {dialect} expert. You will be provided the table schema and instructions to update the schema.
-Your task is to update the schema as per instructions. Please make sure that the table schema is correct
-and actionable, aiming to optimize the structure and performance of the table based on best practices.
-Please make sure that the table schema is correct and executable.
-### Table schema
-{schema}
-### Table schema
-### Instructions
-{instructions}
-### Instructions
+As a {dialect} expert, you will receive the current table schema and instructions for updating it.
+Your objective is to generate the updated schema based on the provided instructions, 
+ensuring correctness, actionability, and optimization of the table structure and performance according to best practices.
 
-UPDATED_TABLE_SCHEMA =
+### Current Table Schema:
+{schema}
+### Current Table Schema:
+
+### Instructions:
+{instructions}
+### Instructions:
+
+Updated Table Schema:
 """
+
 
 def sql_scheme_analysis(dialect:str, schema:str):
     """
