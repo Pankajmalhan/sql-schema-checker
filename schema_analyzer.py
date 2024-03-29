@@ -9,7 +9,7 @@ from langchain.cache import InMemoryCache,SQLiteCache
 set_llm_cache(SQLiteCache(database_path=".langchain.db"))
 
 
-SCHEMA_ANALYZER_PROMPT ="""You are a {dialect} expert tasked with examining a given table schema. 
+SCHEMA_ANALYZER_PROMPT ="""You are a {dialect} expert. 
 Based on the SQL dialect provided and the provided table schema, your task is to verify the schema
 for correctness and suggest improvements if necessary. Begin by thoroughly examining the entire schema,
 paying particular attention to data types, constraints (especially those found at the end of the schema),
@@ -24,6 +24,20 @@ of the table based on best practices and the requirements of the SQL dialect spe
 
 SCHEMA_ANALYZER_RESULT = 
 
+"""
+GENERATE_UPDATED_SCHEMA_TABLE = """
+You are a {dialect} expert. You will be provided the table schema and instructions to update the schema.
+Your task is to update the schema as per instructions. Please make sure that the table schema is correct
+and actionable, aiming to optimize the structure and performance of the table based on best practices.
+Please make sure that the table schema is correct and executable.
+### Table schema
+{schema}
+### Table schema
+### Instructions
+{instructions}
+### Instructions
+
+UPDATED_TABLE_SCHEMA =
 """
 
 def sql_scheme_analysis(dialect:str, schema:str):
@@ -43,3 +57,23 @@ def sql_scheme_analysis(dialect:str, schema:str):
     )
 
     return chain.invoke({"dialect":dialect, "schema":schema})
+
+def create_update_schema(dialect:str, schema:str, instructions:str):
+    print(instructions)
+    """
+    Given a SQL dialect, schema and instruction . Generated the updated schema
+    for given dialect
+    """
+
+    prompt = ChatPromptTemplate.from_template(
+        GENERATE_UPDATED_SCHEMA_TABLE
+    )
+    output_parser = StrOutputParser()
+    model = ChatOpenAI(model="gpt-3.5-turbo")
+    chain = (
+          prompt
+        | model
+        | output_parser
+    )
+
+    return chain.invoke({"dialect":dialect, "schema":schema, "instructions":instructions})  
